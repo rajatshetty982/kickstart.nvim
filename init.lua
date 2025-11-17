@@ -158,12 +158,43 @@ rtp:prepend(lazypath)
 --  To update plugins you can run
 --    :Lazy update
 --
+
+-- Always prefer 4-width tabs by default
+-- vim.opt.tabstop = 4
+-- vim.opt.shiftwidth = 4
+-- vim.opt.softtabstop = 4
+-- vim.opt.expandtab = false -- change to true if you want spaces instead
+
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
 
-  -- NOTE: Plugins can also be added by using a table,
+  'nmac427/guess-indent.nvim',
+  config = function()
+    require('guess-indent').setup {
+      -- auto_cmd = true, -- Set to false to disable automatic execution
+      -- override_editorconfig = true, -- Set to true to override settings set by .editorconfig
+      -- filetype_exclude = { -- A list of filetypes for which the auto command gets disabled
+      --   'netrw',
+      --   'tutor',
+      -- },
+      -- buftype_exclude = { -- A list of buffer types for which the auto command gets disabled
+      --   'help',
+      --   'nofile',
+      --   'terminal',
+      --   -- 'prompt',
+      -- },
+      on_tab_options = { -- A table of vim options when tabs are detected
+        ['expandtab'] = false,
+      },
+      on_space_options = { -- A table of vim options when spaces are detected
+        ['expandtab'] = true,
+        ['tabstop'] = 'detected', -- If the option value is 'detected', The value is set to the automatically detected indent size.
+        ['softtabstop'] = 'detected',
+        ['shiftwidth'] = 'detected',
+      },
+    }
+  end, -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
   --
@@ -578,6 +609,8 @@ require('lazy').setup({
         'gopls',
         'clangd',
 
+        'markdownlint',
+
         'clang-format',
         -- for go and c/cpp
       })
@@ -828,8 +861,9 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  { import = 'custom.plugins' },
-  { import = 'custom.keymaps' },
+  -- { import = 'custom.plugins' },
+  -- { import = 'custom.keymaps' },
+  { import = 'custom' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!

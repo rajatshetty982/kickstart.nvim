@@ -30,8 +30,8 @@ return {
         contrast = '', -- can be "hard", "soft", or ""
         palette_overrides = {},
         overrides = {},
-        dim_inactive = false,
-        transparent_mode = true,
+        dim_inactive = true, -- was false
+        transparent_mode = true, -- was false
       }
       vim.cmd 'colorscheme gruvbox'
     end,
@@ -62,4 +62,45 @@ return {
       -- vim.keymap.set('n', '<leader>jt', require('jira.pickers.snacks').transitions, {}) -- Snacks
     end,
   },
+
+  {
+    -- this is for 'in browser complete view'
+    'iamcco/markdown-preview.nvim',
+    ft = { 'markdown' },
+    build = 'cd app && npm install',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    init = function()
+      vim.g.mkdp_auto_start = 0
+      vim.g.mkdp_auto_close = 1
+    end,
+  },
+  {
+    -- a cool markdown preview in nvim itself, live!
+    'OXY2DEV/markview.nvim',
+    ft = { 'markdown' },
+    lazy = false,
+
+    -- For `nvim-treesitter` users.
+    priority = 49,
+
+    -- For blink.cmp's completion
+    dependencies = {
+      'saghen/blink.cmp',
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
+  -- dont need this, as markview is much better, for now
+  -- {
+  --    -- Markdown preview plugins
+  --    -- this is for 'in terminal view'
+  --    'ellisonleao/glow.nvim',
+  --    ft = { 'markdown' },
+  --    config = function()
+  --      require('glow').setup {
+  --        style = 'dark',
+  --        width = 120,
+  --        border = 'rounded',
+  --      }
+  --    end,
+  --  },
 }
