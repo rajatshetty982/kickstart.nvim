@@ -1,6 +1,5 @@
---
---
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+local vim = vim -- dk how to diable certain errors, so did this, to move error from every vim call to this one place
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -562,6 +561,11 @@ require('lazy').setup({
         clangd = {},
         gopls = {},
         pyright = {},
+
+        csharp_ls = {
+          cmd = { 'csharp-ls' },
+          root_dir = require('lspconfig.util').root_pattern('*.sln', '*.csproj', '.git'),
+        },
         -- rust_analyzer = {},
         --
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -608,6 +612,7 @@ require('lazy').setup({
         'golangci-lint-langserver',
         'gopls',
         'clangd',
+        'csharp_ls',
 
         'markdownlint',
 
@@ -850,7 +855,8 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  require 'kickstart.plugins.debug',
+  require 'custom.plugins.debug',
+
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
@@ -895,3 +901,49 @@ require('lazy').setup({
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
 --
+--
+-- Custom automation setups
+-- setting up a terminal window on the bottom in this buffer itself
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.o.number = false
+    vim.o.relativenumber = true
+  end,
+})
+
+local job_id = 0
+vim.keymap.set('n', '<leader>st', function()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'J'
+  vim.api.nvim_win_set_height(0, 10)
+
+  job_id = vim.bo.channel
+end)
+
+-- vim.keymap.set('n', '<leader>rm', function()
+--   -- make
+--   -- go build
+--   -- test ./tests
+--   -- NOTE: currently this is setup for the sfml pong to run from the src dir and build and run the game
+--   vim.fn.chansend(job_id, { 'cd build/ && make && ./game/graphics/Visual\r\n' }) -- uncomment when doing the chess app
+--   -- vim.fn.chansend(job_id, { 'g++ sol.cpp -o build/o  && ./build/o\r\n' })
+-- end)
+
+vim.keymap.set('n', '<leader>rm', function()
+  if job_id == 0 then
+    vim.notify('No terminal job active', vim.log.levels.ERROR)
+    return
+  end
+
+  local cmd = 'if [ -f Makefile ]; then\n'
+    .. '  make && ./game/graphics/Visual\n'
+    .. 'elif [ -d build ]; then\n'
+    .. '  cd build && make && ./game/graphics/Visual\n'
+    .. 'else\n'
+    .. '  echo "Error: build directory not found"\n'
+    .. 'fi\n'
+
+  vim.fn.chansend(job_id, cmd)
+end)
