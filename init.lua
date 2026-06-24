@@ -856,6 +856,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   require 'custom.plugins.debug',
+  require 'custom.plugins.llm',
 
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
@@ -922,28 +923,45 @@ vim.keymap.set('n', '<leader>st', function()
   job_id = vim.bo.channel
 end)
 
+-- this is for the old koro engine timepass projects
+--
 -- vim.keymap.set('n', '<leader>rm', function()
---   -- make
---   -- go build
---   -- test ./tests
---   -- NOTE: currently this is setup for the sfml pong to run from the src dir and build and run the game
---   vim.fn.chansend(job_id, { 'cd build/ && make && ./game/graphics/Visual\r\n' }) -- uncomment when doing the chess app
---   -- vim.fn.chansend(job_id, { 'g++ sol.cpp -o build/o  && ./build/o\r\n' })
+--   if job_id == 0 then
+--     vim.notify('No terminal job active', vim.log.levels.ERROR)
+--     return
+--   end
+--
+--   local cmd = 'if [ -f Makefile ]; then\n'
+--     .. '  make && ./game/graphics/Visual\n'
+--     .. 'elif [ -d build ]; then\n'
+--     .. '  cd build && make && ./game/graphics/Visual\n'
+--     .. 'else\n'
+--     .. '  echo "Error: build directory not found"\n'
+--     .. 'fi\n'
+--
+--   vim.fn.chansend(job_id, cmd)
 -- end)
 
+-- this is the lates koroEngine
 vim.keymap.set('n', '<leader>rm', function()
   if job_id == 0 then
     vim.notify('No terminal job active', vim.log.levels.ERROR)
     return
   end
 
-  local cmd = 'if [ -f Makefile ]; then\n'
-    .. '  make && ./game/graphics/Visual\n'
-    .. 'elif [ -d build ]; then\n'
-    .. '  cd build && make && ./game/graphics/Visual\n'
-    .. 'else\n'
-    .. '  echo "Error: build directory not found"\n'
-    .. 'fi\n'
+  local build_config = 'Debug'
+  -- Detect current root (useful if you move the project)
+  local project_root = '/mnt/study_work/comp/core_projects/engine_stuff/KoroEngine'
+  -- Updated path matching your premake targetdir: bin/Debug-linux-x86_64/
+  local bin_path = project_root .. string.format('/bin/%s-linux-x86_64/Sandbox/Sandbox', build_config)
+
+  build_config = string.lower(build_config)
+  local cmd = string.format('clear; make config=%s -j$(nproc) && %s\n', build_config, bin_path)
 
   vim.fn.chansend(job_id, cmd)
 end)
+
+vim.keymap.set('n', '<leader>llt', function()
+  local enabled = vim.diagnostic.is_enabled()
+  vim.diagnostic.enable(not enabled)
+end, { desc = 'Toggle diagnostics' })
